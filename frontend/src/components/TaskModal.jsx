@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Clock, AlertCircle, Sparkles } from 'lucide-react';
-import { toDatetimeLocal } from '../utils/dateHelpers';
+import { X, Clock } from 'lucide-react';
 
 export default function TaskModal({
   isOpen,
@@ -12,7 +11,9 @@ export default function TaskModal({
 }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [dateTime, setDateTime] = useState('');
+  const [dateStr, setDateStr] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [priority, setPriority] = useState('Medium');
   const [status, setStatus] = useState('In Progress');
   const [errors, setErrors] = useState({});
@@ -22,13 +23,21 @@ export default function TaskModal({
     if (taskToEdit) {
       setTitle(taskToEdit.title || '');
       setDescription(taskToEdit.description || '');
-      setDateTime(toDatetimeLocal(taskToEdit.dateTime));
+
+      const d = taskToEdit.dateTime ? new Date(taskToEdit.dateTime) : new Date();
+      setDateStr(d.toISOString().split('T')[0]);
+
+      setStartTime(taskToEdit.startTime || '');
+      setEndTime(taskToEdit.endTime || '');
       setPriority(taskToEdit.priority || 'Medium');
       setStatus(taskToEdit.status || 'In Progress');
     } else {
       setTitle('');
       setDescription('');
-      setDateTime(toDatetimeLocal(initialDate || new Date()));
+      const baseDate = initialDate ? new Date(initialDate) : new Date();
+      setDateStr(baseDate.toISOString().split('T')[0]);
+      setStartTime('09:00');
+      setEndTime('10:00');
       setPriority('Medium');
       setStatus('In Progress');
     }
@@ -42,8 +51,8 @@ export default function TaskModal({
     if (!title.trim()) {
       errs.title = 'Title is required';
     }
-    if (!dateTime) {
-      errs.dateTime = 'Date and time are required';
+    if (!dateStr) {
+      errs.dateStr = 'Date is required';
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -55,10 +64,16 @@ export default function TaskModal({
 
     try {
       setIsSubmitting(true);
+      const [year, month, day] = dateStr.split('-');
+      const [hours, minutes] = (startTime || '09:00').split(':');
+      const combinedDate = new Date(year, parseInt(month, 10) - 1, day, hours, minutes);
+
       await onSave({
         title: title.trim(),
         description: description.trim(),
-        dateTime: new Date(dateTime).toISOString(),
+        dateTime: combinedDate.toISOString(),
+        startTime: startTime.trim(),
+        endTime: endTime.trim(),
         priority,
         status,
       });
@@ -70,139 +85,106 @@ export default function TaskModal({
     }
   };
 
-  // Quick date presets
-  const setQuickDate = (daysFromNow) => {
-    const d = new Date();
-    d.setDate(d.getDate() + daysFromNow);
-    d.setMinutes(0);
-    d.setSeconds(0);
-    setDateTime(toDatetimeLocal(d));
-  };
-
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4">
+        <div className="absolute inset-0" onClick={onClose} />
+
         <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 50, scale: 0.95 }}
-          transition={{ duration: 0.2 }}
-          className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-100 overflow-hidden max-h-[92vh] flex flex-col"
+          initial={{ y: '100%', opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: '100%', opacity: 0 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          className="relative z-10 w-full max-w-lg bg-white rounded-t-[32px] sm:rounded-3xl shadow-2xl p-6 max-h-[92vh] overflow-y-auto"
         >
-          {/* Modal Header */}
-          <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                {taskToEdit ? 'Edit Task' : 'Create New Task'}
-              </h2>
-              <p className="text-xs text-slate-500">
-                {taskToEdit
-                  ? 'Update task details and schedule'
-                  : 'Add a new task to your weekly planner'}
-              </p>
-            </div>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+              {taskToEdit ? 'Edit Task' : 'Add New Task'}
+            </h2>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition"
+              className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Form Body */}
-          <form onSubmit={handleSubmit} className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1">
-            {errors.form && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>{errors.form}</span>
-              </div>
-            )}
+          {errors.form && (
+            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-600">
+              {errors.form}
+            </div>
+          )}
 
-            {/* Title (Mandatory) */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Title <span className="text-rose-500">*</span>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                Task title
               </label>
               <input
                 type="text"
                 value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  if (errors.title) setErrors((prev) => ({ ...prev, title: null }));
-                }}
-                placeholder="e.g., Complete System Design Document"
-                maxLength={160}
-                className={`w-full px-3.5 py-2.5 text-sm rounded-xl border ${
-                  errors.title
-                    ? 'border-rose-400 focus:ring-rose-500'
-                    : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20'
-                } focus:outline-none focus:ring-2 transition bg-slate-50/30`}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Task title"
+                className={`w-full px-3.5 py-2.5 rounded-xs border text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#4566EC] transition ${
+                  errors.title ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+                }`}
+                autoFocus
               />
               {errors.title && (
-                <p className="text-[11px] text-rose-500 mt-1 font-medium">{errors.title}</p>
+                <p className="mt-1 text-[11px] text-rose-500 font-medium">
+                  {errors.title}
+                </p>
               )}
             </div>
 
-            {/* Description (Optional) */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Description <span className="text-slate-400 font-normal lowercase">(optional)</span>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                Set Time
               </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add subtasks, links, or context notes..."
-                rows={3}
-                maxLength={1000}
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 focus:outline-none focus:ring-2 transition bg-slate-50/30"
-              />
-            </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="relative flex items-center">
+                  <Clock className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="w-full pl-10 pr-3 py-2.5 rounded-xs border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#4566EC]"
+                  />
+                </div>
 
-            {/* Date & Time (Mandatory) */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Date & Time <span className="text-rose-500">*</span>
-                </label>
-                {/* Quick Shortcuts */}
-                <div className="flex items-center gap-1.5 text-[11px]">
-                  <button
-                    type="button"
-                    onClick={() => setQuickDate(0)}
-                    className="text-indigo-600 hover:text-indigo-800 font-medium px-1.5 py-0.5 rounded bg-indigo-50"
-                  >
-                    Today
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setQuickDate(1)}
-                    className="text-indigo-600 hover:text-indigo-800 font-medium px-1.5 py-0.5 rounded bg-indigo-50"
-                  >
-                    Tomorrow
-                  </button>
+                <div className="relative flex items-center">
+                  <Clock className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="w-full pl-10 pr-3 py-2.5 rounded-xs border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#4566EC]"
+                  />
                 </div>
               </div>
-              <input
-                type="datetime-local"
-                value={dateTime}
-                onChange={(e) => {
-                  setDateTime(e.target.value);
-                  if (errors.dateTime) setErrors((prev) => ({ ...prev, dateTime: null }));
-                }}
-                className={`w-full px-3.5 py-2.5 text-sm rounded-xl border ${
-                  errors.dateTime
-                    ? 'border-rose-400 focus:ring-rose-500'
-                    : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20'
-                } focus:outline-none focus:ring-2 transition bg-slate-50/30`}
-              />
-              {errors.dateTime && (
-                <p className="text-[11px] text-rose-500 mt-1 font-medium">{errors.dateTime}</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                Set Date
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  type="date"
+                  value={dateStr}
+                  onChange={(e) => setDateStr(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xs border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#4566EC]"
+                />
+              </div>
+              {errors.dateStr && (
+                <p className="mt-1 text-[11px] text-rose-500 font-medium">
+                  {errors.dateStr}
+                </p>
               )}
             </div>
 
-            {/* Priority (Optional, defaults to Medium) */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                 Priority
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -213,14 +195,14 @@ export default function TaskModal({
                       key={p}
                       type="button"
                       onClick={() => setPriority(p)}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold border transition ${
+                      className={`py-2 px-3 text-xs font-semibold rounded-xs border transition-all cursor-pointer ${
                         isSelected
                           ? p === 'High'
-                            ? 'bg-rose-500 text-white border-rose-600 shadow-sm'
+                            ? 'bg-rose-50 border-rose-300 text-rose-700 ring-1 ring-rose-400'
                             : p === 'Medium'
-                            ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
-                            : 'bg-sky-500 text-white border-sky-600 shadow-sm'
-                          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                            ? 'bg-amber-50 border-amber-300 text-amber-700 ring-1 ring-amber-400'
+                            : 'bg-blue-50 border-blue-300 text-blue-700 ring-1 ring-blue-400'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
                       {p}
@@ -230,54 +212,42 @@ export default function TaskModal({
               </div>
             </div>
 
-            {/* Status (In Progress vs Completed) */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Status
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                Description
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {['In Progress', 'Completed'].map((s) => {
-                  const isSelected = status === s;
-                  return (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setStatus(s)}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold border transition ${
-                        isSelected
-                          ? s === 'Completed'
-                            ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
-                            : 'bg-indigo-600 text-white border-indigo-700 shadow-sm'
-                          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  );
-                })}
-              </div>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Add description"
+                rows={3}
+                className="w-full px-3.5 py-2.5 rounded-xs border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#4566EC] transition resize-none"
+              />
             </div>
 
-            {/* Submit & Cancel Actions */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={isSubmitting}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition"
-              >
-                Cancel
-              </button>
+            {taskToEdit && (
+              <div className="flex items-center justify-between p-3 rounded-xs bg-slate-50 border border-slate-200">
+                <span className="text-xs font-semibold text-slate-700">Completed</span>
+                <input
+                  type="checkbox"
+                  checked={status === 'Completed'}
+                  onChange={(e) => setStatus(e.target.checked ? 'Completed' : 'In Progress')}
+                  className="w-4 h-4 rounded-xs text-[#4566EC] focus:ring-[#4566EC]"
+                />
+              </div>
+            )}
+
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-200 active:scale-95 transition disabled:opacity-50"
+                className="w-full py-3.5 px-4 bg-[#4566EC] hover:bg-[#3B5BD6] active:scale-[0.98] text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-500/20 transition disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting
                   ? 'Saving...'
                   : taskToEdit
-                  ? 'Save Changes'
-                  : 'Create Task'}
+                  ? 'Update task'
+                  : 'Create task'}
               </button>
             </div>
           </form>

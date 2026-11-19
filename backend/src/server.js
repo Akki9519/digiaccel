@@ -7,55 +7,42 @@ const taskRoutes = require('./routes/taskRoutes');
 
 const app = express();
 
-// Connect Database
+// Connect to MongoDB
 connectDB();
 
 // Middleware
-app.use(cors({
-  origin: '*', // Allow all origins for seamless evaluation and deployment
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
-// Health Check route
+// Health check
 app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    message: 'To-Do MERN Stack Backend API is healthy and operational.',
-    timestamp: new Date().toISOString(),
-  });
+  res.status(200).json({ status: 'ok', message: 'Server is running' });
 });
 
-// API Routes
+// Routes
 app.use('/api/tasks', taskRoutes);
 
-// 404 Handler
-app.use((req, res, next) => {
-  res.status(404).json({
-    success: false,
-    message: `API route not found: ${req.method} ${req.originalUrl}`,
-  });
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
-// Global Error Handler
+// Global error handler
 app.use((err, req, res, next) => {
-  console.error('Unhandled Server Error:', err);
+  console.error(err.stack || err);
   res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Internal Server Error',
+    message: err.message || 'Something went wrong',
   });
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`[Server] Running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode.`);
-  console.log(`[Server] Health check available at: http://localhost:${PORT}/api/health`);
+  console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;

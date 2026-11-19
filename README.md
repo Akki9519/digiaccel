@@ -1,170 +1,118 @@
-# TaskTrack — Weekly To-Do List Mobile Application (MERN Stack)
+# To-Do List Mobile App (MERN Stack)
 
-> Built for the **SDE-1 (MERN Stack)** assignment at **Digiaccel Learning / Altera Institute**.
+A mobile-responsive To-Do List web application built using the MERN stack (MongoDB, Express, React, Node.js) based on the provided Figma design.
 
-A modern, responsive, mobile-first To-Do List web application designed to help users organize, schedule, and track tasks grouped dynamically by calendar week (**Monday to Sunday**). Features real-time open vs. completed task progress indicators, smooth mobile swipe-to-delete gestures, debounced search, and clean RESTful API architecture.
+## Features
 
----
+- **Task Management**: Create, edit, delete, and view tasks with title, description, date & time, and priority (Low, Medium, High).
+- **Weekly Organization**: Tasks are organized by week (Monday to Sunday) with dynamic summary counters for open and completed tasks.
+- **Progress Tracking**: Visual progress bar tracking completed vs open tasks.
+- **Status Toggle**: Mark tasks as In Progress or Completed with custom checkboxes and strikethrough styling.
+- **Search**: Search tasks by keywords in real time with quick status and edit/delete actions.
+- **Swipe-to-Delete**: Swipe left gesture support on mobile for quick task removal.
+- **Figma Design Matching**: Pixel-aligned UI including onboarding, weekly calendar strip, summary cards, and task modal.
 
-## 📱 Key Features & Requirements Coverage
+## Tech Stack
 
-### 1. Weekly Organization & Summary Cards
-- **Monday–Sunday ISO Week Bucketing:** Tasks are automatically grouped into their corresponding calendar weeks starting on **Monday** and ending on **Sunday**.
-- **Task Summary Cards:** Each week displays:
-  - Total **Open Tasks** count
-  - Total **Completed Tasks** count
-  - Visual completion percentage bar
-  - Context badge (*Current Week*, *Past Week*, or *Upcoming*)
-- **Accordion Expansion:** Tapping/clicking any week card smoothly expands or collapses the task list for that week.
+- **Frontend**: React 19, Vite, Tailwind CSS, Framer Motion, Lucide React
+- **Backend**: Node.js, Express.js, Mongoose, CORS, Morgan
+- **Database**: MongoDB (Local or Atlas)
 
-### 2. Task Management (Full CRUD)
-- **Create Task:**
-  - `Title` *(Mandatory)*
-  - `Date & Time` *(Mandatory, with quick-select presets for "Today" & "Tomorrow")*
-  - `Description` *(Optional, with expandable read-more)*
-  - `Priority` *(Optional: Low, Medium, High)*
-  - `Status` *(In Progress / Completed)*
-- **Edit Task:** Update any task attribute (title, description, date & time, priority, status).
-- **Status Toggle:** One-tap toggle between `In Progress` and `Completed` with optimistic UI updates and strikethrough styling.
-
-### 3. Mobile-First UX & Swipe-to-Delete
-- **Swipe Left to Delete:** Native mobile gesture built with Framer Motion — swiping left on a task reveals the red action tray with a Delete button.
-- Direct edit and delete buttons are also accessible for mouse/desktop interactions.
-
-### 4. Search Functionality
-- Real-time debounced search by keyword across `title` and `description`.
-- Direct action shortcuts in search results to view, toggle status, edit, or delete matching tasks.
-
----
-
-## 🛠️ Technology Stack
-
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend** | React 19, Vite, Tailwind CSS v4, Framer Motion, Lucide Icons |
-| **Backend** | Node.js, Express.js, Mongoose, RESTful APIs, CORS, Morgan |
-| **Database** | MongoDB (indexed on `title`, `description`, `dateTime`, and `status`) |
-| **Deployment** | Netlify (Frontend) + Render / Railway (Backend) |
-
----
-
-## 📂 Project Architecture
+## Project Structure
 
 ```
 todo-mern-assignment/
 ├── backend/
 │   ├── src/
-│   │   ├── config/
-│   │   │   └── db.js              # MongoDB connection
-│   │   ├── controllers/
-│   │   │   └── taskController.js  # CRUD, weekly grouping & search controllers
-│   │   ├── models/
-│   │   │   └── Task.js            # Mongoose Task schema & indexes
-│   │   ├── routes/
-│   │   │   └── taskRoutes.js      # REST API route definitions
+│   │   ├── config/db.js
+│   │   ├── controllers/taskController.js
+│   │   ├── models/Task.js
+│   │   ├── routes/taskRoutes.js
 │   │   ├── utils/
-│   │   │   ├── dateUtils.js       # Monday-Sunday boundary calculator
-│   │   │   └── seed.js            # Sample data seeder
-│   │   └── server.js              # Express app setup & middleware
+│   │   │   ├── dateUtils.js
+│   │   │   └── seed.js
+│   │   └── server.js
 │   ├── .env.example
 │   └── package.json
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Header.jsx         # App bar, date & search trigger
-│   │   │   ├── StatsOverview.jsx  # Productivity metrics banner
-│   │   │   ├── WeekCard.jsx       # Weekly summary card & accordion
-│   │   │   ├── TaskItem.jsx       # Swipe-to-delete row & status checkbox
-│   │   │   ├── TaskModal.jsx      # Create / Edit task form with validation
-│   │   │   ├── SearchModal.jsx    # Keyword search overlay & results
-│   │   │   └── DeleteConfirmModal.jsx # Delete confirmation dialog
-│   │   ├── services/
-│   │   │   └── api.js             # API client
-│   │   ├── utils/
-│   │   │   └── dateHelpers.js     # Date formatting & priority helpers
-│   │   ├── App.jsx                # Main application state & orchestration
-│   │   └── index.css              # Tailwind CSS styling
+│   │   │   ├── CalendarStrip.jsx
+│   │   │   ├── DeleteConfirmModal.jsx
+│   │   │   ├── Header.jsx
+│   │   │   ├── Onboarding.jsx
+│   │   │   ├── SearchScreen.jsx
+│   │   │   ├── StatsOverview.jsx
+│   │   │   ├── TaskItem.jsx
+│   │   │   └── TaskModal.jsx
+│   │   ├── services/api.js
+│   │   ├── utils/dateHelpers.js
+│   │   ├── App.jsx
+│   │   └── index.css
 │   ├── index.html
 │   ├── vite.config.js
 │   └── package.json
-├── netlify.toml                   # 1-click Netlify deployment configuration
+├── netlify.toml
 └── README.md
 ```
 
----
-
-## 🚀 Getting Started Locally
+## Getting Started
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18+ recommended)
-- [MongoDB](https://www.mongodb.com/) running locally or a [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) URI
+
+- Node.js (v18+)
+- MongoDB running locally or a MongoDB Atlas URI
 
 ### 1. Backend Setup
+
 ```bash
 cd backend
 npm install
 
-# Create environment file
+# Setup environment variables
 cp .env.example .env
-# Ensure MONGODB_URI=mongodb://127.0.0.1:27017/todo_app_db or your Atlas URI
+# Ensure MONGODB_URI points to your MongoDB instance (default: mongodb://127.0.0.1:27017/todo_app_db)
 
-# Optional: Seed sample tasks across multiple weeks
+# Optional: Seed sample tasks
 npm run seed
 
-# Start server
+# Run backend in development mode
 npm run dev
-# Backend runs at: http://localhost:5000
 ```
 
+Server will start on `http://localhost:5000`.
+
 ### 2. Frontend Setup
+
 ```bash
-cd ../frontend
+cd frontend
 npm install
 
 # Start Vite dev server
 npm run dev
-# Frontend runs at: http://localhost:5173
 ```
 
----
+App will run on `http://localhost:5173`.
 
-## 📡 API Reference
+## API Endpoints
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/health` | Server health check |
-| `GET` | `/api/tasks/weekly` | Get tasks grouped by Monday–Sunday weeks with metrics |
-| `GET` | `/api/tasks` | Get all tasks (supports `?search=...`, `?status=...`, `?priority=...`) |
-| `GET` | `/api/tasks/:id` | Get single task by ID |
-| `POST` | `/api/tasks` | Create task (`title` and `dateTime` mandatory) |
-| `PUT` | `/api/tasks/:id` | Update task attributes |
-| `PATCH` | `/api/tasks/:id/status`| Toggle / update task status (`In Progress` ↔ `Completed`) |
-| `DELETE`| `/api/tasks/:id` | Delete task by ID |
+- `GET /api/tasks` - Get all tasks (supports query params: `search`, `status`, `priority`)
+- `GET /api/tasks/weekly` - Get tasks grouped by Monday-Sunday weeks with open/completed counts
+- `GET /api/tasks/:id` - Get task by ID
+- `POST /api/tasks` - Create a new task (body: `title`, `description`, `dateTime`, `startTime`, `endTime`, `priority`, `status`)
+- `PUT /api/tasks/:id` - Update an existing task
+- `PATCH /api/tasks/:id/status` - Update task status (`In Progress` / `Completed`)
+- `DELETE /api/tasks/:id` - Delete a task
+- `GET /api/health` - Server health check
 
----
-
-## 🌐 Deployment Instructions
+## Deployment
 
 ### Frontend (Netlify)
-1. Push your repository to GitHub.
-2. Log into [Netlify](https://www.netlify.com/) and click **"Add new site" > "Import an existing project"**.
-3. Select your GitHub repository:
-   - **Base directory:** `frontend`
-   - **Build command:** `npm run build`
-   - **Publish directory:** `dist`
-4. In **Site Configuration > Environment Variables**, add:
-   - `VITE_API_URL` = `https://your-backend-api.onrender.com/api`
-5. Click **Deploy Site**.
+1. Link repository to Netlify.
+2. Build command: `npm run build`, Publish directory: `dist`, Base directory: `frontend`.
+3. Set environment variable: `VITE_API_URL` = `<your-backend-api-url>/api`.
 
-### Backend (Render or Railway)
-1. Log into [Render](https://render.com/) and create a **New Web Service**.
-2. Connect your GitHub repository:
-   - **Root Directory:** `backend`
-   - **Runtime:** `Node`
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-3. Add Environment Variables:
-   - `NODE_ENV` = `production`
-   - `PORT` = `5000`
-   - `MONGODB_URI` = `<Your MongoDB Atlas Connection String>`
-4. Deploy and copy your service URL to set in the frontend's `VITE_API_URL`.
+### Backend (Render / Railway)
+1. Create a Web Service connected to the `backend` directory.
+2. Set build command: `npm install`, start command: `npm start`.
+3. Set environment variables: `PORT`, `NODE_ENV=production`, `MONGODB_URI`.

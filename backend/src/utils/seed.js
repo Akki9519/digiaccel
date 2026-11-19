@@ -1,28 +1,63 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 const mongoose = require('mongoose');
 const Task = require('../models/Task');
 const connectDB = require('../config/db');
 
 const sampleTasks = [
-  // Current week tasks (assuming mid-November 2026 or relative to today)
+  // Exact Figma Screen Tasks for Today
   {
-    title: 'Complete SDE-1 Assignment Submission',
-    description: 'Ensure backend API and React frontend are properly tested and deployed on Netlify.',
-    dateTime: new Date(Date.now() + 1000 * 60 * 60 * 4), // 4 hours from now
+    title: 'Finishing Wireframe',
+    description: 'Design mobile app wireframes and interactive user flows for client review',
+    dateTime: new Date(),
+    startTime: '09:00',
+    endTime: '10:30',
     priority: 'High',
     status: 'In Progress',
   },
   {
-    title: 'Design Review with Product Team',
-    description: 'Walk through Figma responsive mobile layout and swipe-to-delete interaction.',
+    title: 'Meeting with team',
+    description: 'Weekly sprint planning sync with product manager and developers',
+    dateTime: new Date(),
+    startTime: '11:00',
+    endTime: '12:00',
+    priority: 'Medium',
+    status: 'In Progress',
+  },
+  {
+    title: 'Buy a cat food',
+    description: 'Pick up dry food and treats from pet store on 4th street',
+    dateTime: new Date(),
+    startTime: '17:00',
+    endTime: '17:30',
+    priority: 'Low',
+    status: 'Completed',
+  },
+  {
+    title: 'Finishing daily commission',
+    description: 'Complete the freelance vector illustration asset pack',
+    dateTime: new Date(),
+    startTime: '18:00',
+    endTime: '19:00',
+    priority: 'Medium',
+    status: 'Completed',
+  },
+  {
+    title: 'Doing Homework',
+    description: 'Finish math and computer science problem set chapter 4',
     dateTime: new Date(Date.now() + 1000 * 60 * 60 * 24), // tomorrow
-    priority: 'High',
+    startTime: '14:00',
+    endTime: '15:30',
+    priority: 'Medium',
     status: 'In Progress',
   },
+
+  // Additional tasks for week representation
   {
     title: 'Code Refactoring & Unit Tests',
     description: 'Refactor date grouping helpers and verify Monday-Sunday boundary logic.',
     dateTime: new Date(Date.now() + 1000 * 60 * 60 * 48), // 2 days from now
+    startTime: '10:00',
+    endTime: '11:30',
     priority: 'Medium',
     status: 'Completed',
   },
@@ -30,56 +65,40 @@ const sampleTasks = [
     title: 'Update Project Documentation',
     description: 'Write clear README with setup instructions, API contracts, and architecture summary.',
     dateTime: new Date(Date.now() + 1000 * 60 * 60 * 72),
+    startTime: '16:00',
+    endTime: '17:00',
     priority: 'Low',
     status: 'Completed',
   },
-
-  // Next week tasks
-  {
-    title: 'Sprint Planning & Backlog Grooming',
-    description: 'Review upcoming learner experience features and architecture milestones.',
-    dateTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days from now
-    priority: 'High',
-    status: 'In Progress',
-  },
-  {
-    title: 'Database Indexing & Query Tuning',
-    description: 'Benchmark search endpoint and optimize text index performance.',
-    dateTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 8),
-    priority: 'Medium',
-    status: 'In Progress',
-  },
-
-  // Past week tasks
   {
     title: 'Initial Project Scaffolding',
     description: 'Setup Node/Express backend and Vite + React frontend with Tailwind CSS.',
-    dateTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8), // 8 days ago
+    dateTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
+    startTime: '09:00',
+    endTime: '11:00',
     priority: 'High',
-    status: 'Completed',
-  },
-  {
-    title: 'Setup MongoDB Schema & Endpoints',
-    description: 'Configure Mongoose Task model with title, dateTime, priority, and status fields.',
-    dateTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-    priority: 'Medium',
     status: 'Completed',
   },
 ];
 
-const seedData = async () => {
+async function seed() {
   try {
-    await connectDB();
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/todo_app_db';
+    await mongoose.connect(mongoUri);
+    console.log('[Seed] Connected to MongoDB...');
+
     await Task.deleteMany({});
     console.log('[Seed] Cleared existing tasks.');
 
     const created = await Task.insertMany(sampleTasks);
-    console.log(`[Seed] Successfully inserted ${created.length} sample tasks.`);
+    console.log(`[Seed] Successfully seeded ${created.length} sample tasks matching Figma design.`);
+
+    await mongoose.disconnect();
     process.exit(0);
-  } catch (error) {
-    console.error('[Seed] Error seeding data:', error);
+  } catch (err) {
+    console.error('[Seed] Error during seeding:', err);
     process.exit(1);
   }
-};
+}
 
-seedData();
+seed();

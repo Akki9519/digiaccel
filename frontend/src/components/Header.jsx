@@ -1,54 +1,29 @@
 import React from 'react';
-import { Plus, Search, CalendarCheck2 } from 'lucide-react';
+import { Search, Settings } from 'lucide-react';
 
-export default function Header({ onOpenAddModal, onOpenSearch, summary }) {
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
-
+export default function Header({ onOpenSearch, onOpenOnboarding }) {
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200/80 px-4 py-3.5 transition-all shadow-sm">
-      <div className="flex items-center justify-between">
-        {/* Branding & Date */}
-        <div className="flex items-center space-x-2.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-200">
-            <CalendarCheck2 className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-none flex items-center gap-1.5">
-              TaskTrack
-              <span className="text-[10px] font-semibold tracking-wide uppercase px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100">
-                Weekly
-              </span>
-            </h1>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">{today}</p>
+    <header className="px-4 pt-4 pb-2 bg-white select-none">
+      <div className="flex items-center gap-2">
+        <div
+          onClick={onOpenSearch}
+          className="relative flex-1 flex items-center cursor-pointer group"
+        >
+          <div className="w-full px-3.5 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-[6px] flex items-center justify-between transition-all">
+            <span className="text-xs text-slate-400 group-hover:text-slate-500 font-normal">
+              Search for a task
+            </span>
+            <Search className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition" />
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center space-x-2">
-          {/* Search Trigger */}
-          <button
-            onClick={onOpenSearch}
-            className="p-2 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 active:scale-95 rounded-xl transition duration-150 border border-slate-200 hover:border-indigo-200"
-            title="Search Tasks (Title, Description)"
-            aria-label="Search Tasks"
-          >
-            <Search className="w-4 h-4" />
-          </button>
-
-          {/* Add Task Button */}
-          <button
-            onClick={onOpenAddModal}
-            className="inline-flex items-center space-x-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-semibold shadow-sm shadow-indigo-200 transition duration-150"
-            title="Create New Task"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden xs:inline">Add Task</span>
-          </button>
-        </div>
+        <button
+          onClick={onOpenOnboarding}
+          className="p-2 rounded-[6px] text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+          title="Settings"
+        >
+          <Settings className="w-4 h-4 stroke-[1.8]" />
+        </button>
       </div>
     </header>
   );
